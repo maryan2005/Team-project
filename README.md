@@ -128,5 +128,5 @@ GitHub Repository: (https://github.com/maryan2005/Team-project)
 Architecture Document: Add your architecture document link.
 Design Document: Add your design document link.
 Project Documentation: Add your documentation link.
+Canvas link: https://nku.instructure.com/courses/91834/modules/items/4231102
 
-Note: The responsibilities above are examples. You should replace them with the actual 8 tasks assigned to each person in your group.
