@@ -129,4 +129,3 @@ Architecture Document: Add your architecture document link.
 Design Document: Add your design document link.
 Project Documentation: Add your documentation link.
 
-Note: The responsibilities above are examples. You should replace them with the actual 8 tasks assigned to each person in your group.
