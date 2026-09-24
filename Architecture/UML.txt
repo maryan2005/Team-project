@@ -1,0 +1,188 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+' Main Engine Controller
+class GameEngine {
+    - screen : pygame.Surface
+    - clock : pygame.time.Clock
+    - is_running : bool
+    - target_fps : int
+    - current_state : GameState
+    + settings : Dict[str, Any]
+    
+    + __init__(width: int, height: int, title: str, target_fps: int = 60)
+    + initialize() : void
+    + run() : void
+    + change_state(new_state: GameState) : void
+    + handle_events() : void
+    + update(delta_time: float) : void
+    + render() : void
+    + quit() : void
+}
+
+' Abstract Base State
+abstract class GameState {
+    # engine : GameEngine
+    + __init__(engine: GameEngine)
+    + {abstract} handle_input(event: pygame.event.Event) : void
+    + {abstract} update(delta_time: float) : void
+    + {abstract} draw(surface: pygame.Surface) : void
+}
+
+' Concrete Game States
+class TitleState {
+    - selected_option : int
+    - options : List[str]
+    + handle_input(event: pygame.event.Event) : void
+    + update(delta_time: float) : void
+    + draw(surface: pygame.Surface) : void
+}
+
+class PlayState {
+    - board : Board
+    - active_piece : Piece
+    - next_piece : Piece
+    - held_piece : Optional[Piece]
+    - can_hold : bool
+    - input_handler : InputHandler
+    - score_manager : ScoreManager
+    - challenge_manager : ChallengeManager
+    + handle_input(event: pygame.event.Event) : void
+    + update(delta_time: float) : void
+    + draw(surface: pygame.Surface) : void
+    + hold_piece_action() : void
+    + spawn_next_piece() : void
+    + pause_game() : void
+    + game_over() : void
+}
+
+class PauseState {
+    - play_state : PlayState
+    - selected_option : int
+    + handle_input(event: pygame.event.Event) : void
+    + update(delta_time: float) : void
+    + draw(surface: pygame.Surface) : void
+}
+
+class SettingsState {
+    - selected_setting : int
+    + handle_input(event: pygame.event.Event) : void
+    + update(delta_time: float) : void
+    + draw(surface: pygame.Surface) : void
+    + save_settings() : void
+}
+
+class GameOverState {
+    - final_score : int
+    - lines_cleared : int
+    + handle_input(event: pygame.event.Event) : void
+    + update(delta_time: float) : void
+    + draw(surface: pygame.Surface) : void
+}
+
+' Dedicated Gameplay Input Handler
+class InputHandler {
+    - key_bindings : Dict[str, int]
+    - das_delay : float
+    - arr_rate : float
+    - das_timer : float
+    - arr_timer : float
+    - held_keys : Dict[int, bool]
+    + process_event(event: pygame.event.Event) : Optional[str]
+    + update_held_inputs(delta_time: float) : List[str]
+    + set_binding(action: str, key: int) : void
+}
+
+' Board Class
+class Board {
+    - width : int = 10
+    - height : int = 20
+    - grid : List[List[Optional[Tuple[int, int, int]]]]
+    + is_valid_position(piece: Piece, offset_x: int = 0, offset_y: int = 0, rotation: int = -1) : bool
+    + lock_piece(piece: Piece) : void
+    + clear_full_lines() : int
+    + is_line_full(row: int) : bool
+    + clear_line(row: int) : void
+    + move_rows_down(from_row: int) : void
+    + reset() : void
+    + draw(surface: pygame.Surface, offset_x: int, offset_y: int, cell_size: int) : void
+}
+
+' Piece Class
+class Piece {
+    - shape_type : str
+    - shape : List[List[int]]
+    - color : Tuple[int, int, int]
+    - x : int
+    - y : int
+    - rotation_index : int
+    + move(dx: int, dy: int) : void
+    + rotate_cw() : void
+    + rotate_ccw() : void
+    + get_world_blocks() : List[Tuple[int, int]]
+    + get_ghost_position(board: Board) : Tuple[int, int]
+    + reset_position() : void
+    + draw(surface: pygame.Surface, offset_x: int, offset_y: int, cell_size: int, is_ghost: bool = false) : void
+}
+
+' Score Management
+class ScoreManager {
+    - score : int
+    - level : int
+    - total_lines : int
+    - combo_count : int
+    - high_score : int
+    + process_line_clear(lines_cleared: int, is_t_spin: bool = false) : int
+    + add_drop_score(distance: int, is_hard_drop: bool) : void
+    + update_level() : void
+    + get_fall_speed() : float
+    + load_high_score() : void
+    + save_high_score() : void
+    + reset() : void
+}
+
+' Challenge & Objective Management
+class ChallengeManager {
+    - active_challenge_id : Optional[str]
+    - target_score : int
+    - target_lines : int
+    - time_limit : float
+    - elapsed_time : float
+    - is_completed : bool
+    - is_failed : bool
+    + load_challenge(challenge_id: str) : void
+    + update(delta_time: float, current_score: int, lines_cleared: int) : void
+    + check_completion() : bool
+    + check_failure() : bool
+    + reset() : void
+}
+
+' Engine & State Relationships
+GameEngine "1" *-- "1" GameState : current_state
+GameState "1" o-- "1" GameEngine : engine
+
+' Inheritance Hierarchy
+GameState <|-- TitleState
+GameState <|-- PlayState
+GameState <|-- PauseState
+GameState <|-- SettingsState
+GameState <|-- GameOverState
+
+' Specific Pause State Relationship
+PauseState "1" o-- "1" PlayState : play_state
+
+' PlayState Domain Aggregations & Compositions
+PlayState "1" *-- "1" InputHandler : input_handler
+PlayState "1" *-- "1" Board : board
+PlayState "1" *-- "1" ScoreManager : score_manager
+PlayState "1" *-- "1" ChallengeManager : challenge_manager
+PlayState "1" o-- "1..3" Piece : active, next, held
+
+' Board and Piece Interaction
+Board "1" ..> "1" Piece : validates/locks
+
+' PlayState Interaction with Managers
+PlayState "1" ..> "1" ScoreManager : updates on action
+PlayState "1" ..> "1" ChallengeManager : evaluates progress
+
+@enduml
