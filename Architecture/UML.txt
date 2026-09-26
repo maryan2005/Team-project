@@ -1,26 +1,29 @@
 @startuml
 skinparam classAttributeIconSize 0
 
-' Main Engine Controller
+' ==========================================
+' ENGINE & CORE INTERFACES
+' ==========================================
+
 class GameEngine {
+    - width : int
+    - height : int
+    - title : str
+    - target_fps : int
     - screen : pygame.Surface
     - clock : pygame.time.Clock
     - is_running : bool
-    - target_fps : int
     - current_state : GameState
-    + settings : Dict[str, Any]
-    
-    + __init__(width: int, height: int, title: str, target_fps: int = 60)
+    - settings_manager : SettingsManager
     + initialize() : void
-    + run() : void
     + change_state(new_state: GameState) : void
     + handle_events() : void
     + update(delta_time: float) : void
     + render() : void
+    + run() : void
     + quit() : void
 }
 
-' Abstract Base State
 abstract class GameState {
     # engine : GameEngine
     + __init__(engine: GameEngine)
@@ -29,13 +32,72 @@ abstract class GameState {
     + {abstract} draw(surface: pygame.Surface) : void
 }
 
-' Concrete Game States
+' ==========================================
+' CONFIGURATION & PERSISTENCE
+' ==========================================
+
+class SettingsManager {
+    - file_path : str
+    - volume : float
+    - key_bindings : Dict[str, int]
+    - das_delay : float
+    - arr_rate : float
+    + load_settings() : void
+    + save_settings() : void
+    + get_binding(action: str) : int
+    + set_binding(action: str, key: int) : void
+    + get_volume() : float
+    + set_volume(volume: float) : void
+}
+
+interface IHighScoreRepository {
+    + load_high_score() : int
+    + save_high_score(score: int) : void
+}
+
+class FileHighScoreRepository implements IHighScoreRepository {
+    - file_path : str
+    + load_high_score() : int
+    + save_high_score(score: int) : void
+}
+
+' ==========================================
+' DOMAIN INTERFACES (DIP & ISP)
+' ==========================================
+
+interface IInputHandler {
+    + process_event(event: pygame.event.Event) : Optional[str]
+    + update_held_inputs(delta_time: float) : List[str]
+}
+
+interface IScoreManager {
+    + process_line_clear(lines_cleared: int, is_t_spin: bool) : int
+    + add_drop_score(distance: int, is_hard_drop: bool) : void
+    + get_fall_speed() : float
+    + get_score() : int
+    + get_lines() : int
+    + get_level() : int
+    + reset() : void
+}
+
+interface IChallengeManager {
+    + update(delta_time: float, current_score: int, lines_cleared: int) : void
+    + check_completion() : bool
+    + check_failure() : bool
+}
+
+' ==========================================
+' CONCRETE GAME STATES
+' ==========================================
+
 class TitleState {
     - selected_option : int
     - options : List[str]
     + handle_input(event: pygame.event.Event) : void
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
+    + navigate_menu(direction: int) : void
+    + select_option() : void
 }
 
 class PlayState {
@@ -44,9 +106,10 @@ class PlayState {
     - next_piece : Piece
     - held_piece : Optional[Piece]
     - can_hold : bool
-    - input_handler : InputHandler
-    - score_manager : ScoreManager
-    - challenge_manager : ChallengeManager
+    - input_handler : IInputHandler
+    - score_manager : IScoreManager
+    - challenge_manager : IChallengeManager
+    - board_renderer : BoardRenderer
     + handle_input(event: pygame.event.Event) : void
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
@@ -57,58 +120,101 @@ class PlayState {
 }
 
 class PauseState {
-    - play_state : PlayState
+    - suspended_play_state : PlayState
     - selected_option : int
+    - options : List[str]
+    + __init__(engine: GameEngine, suspended_play_state: PlayState)
     + handle_input(event: pygame.event.Event) : void
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
+    + resume_game() : void
+    + return_to_title() : void
 }
 
 class SettingsState {
+    - settings_manager : SettingsManager
     - selected_setting : int
     + handle_input(event: pygame.event.Event) : void
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
-    + save_settings() : void
+    + rebind_key(action: str, new_key: int) : void
+    + adjust_volume(delta: float) : void
 }
 
 class GameOverState {
     - final_score : int
     - lines_cleared : int
+    - is_high_score : bool
     + handle_input(event: pygame.event.Event) : void
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
+    + restart_game() : void
+    + return_to_title() : void
 }
 
-' Dedicated Gameplay Input Handler
-class InputHandler {
-    - key_bindings : Dict[str, int]
-    - das_delay : float
-    - arr_rate : float
+' ==========================================
+' PRESENTATION LAYER (RENDERER)
+' ==========================================
+
+class BoardRenderer {
+    - cell_size : int
+    - grid_offset_x : int
+    - grid_offset_y : int
+    + render_board(surface: pygame.Surface, board: Board) : void
+    + render_piece(surface: pygame.Surface, piece: Piece, is_ghost: bool = false) : void
+    + render_hold_and_next(surface: pygame.Surface, held_piece: Optional[Piece], next_piece: Piece) : void
+}
+
+' ==========================================
+' CONCRETE DOMAIN IMPLEMENTATIONS
+' ==========================================
+
+class InputHandler implements IInputHandler {
+    - settings_manager : SettingsManager
     - das_timer : float
     - arr_timer : float
     - held_keys : Dict[int, bool]
     + process_event(event: pygame.event.Event) : Optional[str]
     + update_held_inputs(delta_time: float) : List[str]
-    + set_binding(action: str, key: int) : void
 }
 
-' Board Class
+class GuidelineScoreManager implements IScoreManager {
+    - score : int
+    - level : int
+    - total_lines : int
+    - high_score_repo : IHighScoreRepository
+    + process_line_clear(lines_cleared: int, is_t_spin: bool) : int
+    + add_drop_score(distance: int, is_hard_drop: bool) : void
+    + get_fall_speed() : float
+    + get_score() : int
+    + get_lines() : int
+    + get_level() : int
+    + reset() : void
+}
+
+class StandardChallengeManager implements IChallengeManager {
+    - target_score : int
+    - target_lines : int
+    - time_limit : float
+    - elapsed_time : float
+    + update(delta_time: float, current_score: int, lines_cleared: int) : void
+    + check_completion() : bool
+    + check_failure() : bool
+}
+
 class Board {
     - width : int = 10
     - height : int = 20
     - grid : List[List[Optional[Tuple[int, int, int]]]]
-    + is_valid_position(piece: Piece, offset_x: int = 0, offset_y: int = 0, rotation: int = -1) : bool
+    + is_valid_position(piece: Piece, offset_x: int = 0, offset_y: int = 0) : bool
     + lock_piece(piece: Piece) : void
     + clear_full_lines() : int
     + is_line_full(row: int) : bool
     + clear_line(row: int) : void
     + move_rows_down(from_row: int) : void
     + reset() : void
-    + draw(surface: pygame.Surface, offset_x: int, offset_y: int, cell_size: int) : void
 }
 
-' Piece Class
 class Piece {
     - shape_type : str
     - shape : List[List[int]]
@@ -122,67 +228,43 @@ class Piece {
     + get_world_blocks() : List[Tuple[int, int]]
     + get_ghost_position(board: Board) : Tuple[int, int]
     + reset_position() : void
-    + draw(surface: pygame.Surface, offset_x: int, offset_y: int, cell_size: int, is_ghost: bool = false) : void
 }
 
-' Score Management
-class ScoreManager {
-    - score : int
-    - level : int
-    - total_lines : int
-    - combo_count : int
-    - high_score : int
-    + process_line_clear(lines_cleared: int, is_t_spin: bool = false) : int
-    + add_drop_score(distance: int, is_hard_drop: bool) : void
-    + update_level() : void
-    + get_fall_speed() : float
-    + load_high_score() : void
-    + save_high_score() : void
-    + reset() : void
-}
+' ==========================================
+' RELATIONSHIPS & INHERITANCE
+' ==========================================
 
-' Challenge & Objective Management
-class ChallengeManager {
-    - active_challenge_id : Optional[str]
-    - target_score : int
-    - target_lines : int
-    - time_limit : float
-    - elapsed_time : float
-    - is_completed : bool
-    - is_failed : bool
-    + load_challenge(challenge_id: str) : void
-    + update(delta_time: float, current_score: int, lines_cleared: int) : void
-    + check_completion() : bool
-    + check_failure() : bool
-    + reset() : void
-}
-
-' Engine & State Relationships
 GameEngine "1" *-- "1" GameState : current_state
+GameEngine "1" *-- "1" SettingsManager : owns settings
 GameState "1" o-- "1" GameEngine : engine
 
-' Inheritance Hierarchy
+' Explicit GameState Inheritance Tree
 GameState <|-- TitleState
 GameState <|-- PlayState
 GameState <|-- PauseState
 GameState <|-- SettingsState
 GameState <|-- GameOverState
 
-' Specific Pause State Relationship
-PauseState "1" o-- "1" PlayState : play_state
+' Shared Settings References
+SettingsState "1" o-- "1" SettingsManager : modifies & saves
+InputHandler "1" o-- "1" SettingsManager : reads keybindings
 
-' PlayState Domain Aggregations & Compositions
-PlayState "1" *-- "1" InputHandler : input_handler
-PlayState "1" *-- "1" Board : board
-PlayState "1" *-- "1" ScoreManager : score_manager
-PlayState "1" *-- "1" ChallengeManager : challenge_manager
-PlayState "1" o-- "1..3" Piece : active, next, held
+' PlayState Compositions & Aggregations
+PlayState "1" *-- "1" IInputHandler
+PlayState "1" *-- "1" IScoreManager
+PlayState "1" *-- "1" IChallengeManager
+PlayState "1" *-- "1" Board
+PlayState "1" *-- "1" BoardRenderer
+PlayState "1" o-- "1..3" Piece
 
-' Board and Piece Interaction
-Board "1" ..> "1" Piece : validates/locks
+' Renderer Interactions
+BoardRenderer "1" ..> "1" Board : renders
+BoardRenderer "1" ..> "1" Piece : renders
 
-' PlayState Interaction with Managers
-PlayState "1" ..> "1" ScoreManager : updates on action
-PlayState "1" ..> "1" ChallengeManager : evaluates progress
+' Domain Interactions
+GuidelineScoreManager "1" o-- "1" IHighScoreRepository : repo
 
-@enduml
+' Explicit Ownership of Suspended State
+PauseState "1" *-- "1" PlayState : suspended_play_state
+
+@endl
