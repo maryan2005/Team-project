@@ -1,0 +1,149 @@
+---
+marp: true
+theme: default
+paginate: true
+---
+
+# Team Project Progress
+
+### ASE 420
+### Team Yellow
+
+---
+
+# This Week's Progress
+
+### Team Milestone
+Feature Development
+
+### Progress
+- Project architecture completed
+- Original code refactored
+- Start Menu added
+- Score System completed
+- GitHub project organized
+
+---
+
+# Completed Features
+
+### Score System
+**1 / 8 Features Completed** ✅
+
+- Standard Tetris scoring
+- Soft drop scoring
+- Hard drop scoring
+- Manual testing completed
+
+### Start Menu
+**Completed** ✅
+
+- Start Game
+- Quit
+- Menu navigation
+
+---
+
+# Score System
+
+### Line Clear Scoring
+
+**1 Line** → 100  
+**2 Lines** → 200  
+**3 Lines** → 300  
+**4 Lines** → 400
+
+**Soft Drop** → 1 / row  
+**Hard Drop** → 2 / cell
+
+---
+
+# Evidence
+
+### GitHub
+
+**Pull Request #4**
+
+**Commit:** `19a05e3`
+
+**File:** `Code/domain/score_manager.py`
+
+- 11 lines added
+- 9 lines removed
+- PR ready to merge
+
+---
+
+# Testing
+
+### Manual Testing
+
+- Line clears ✅
+- Soft drops ✅
+- Hard drops ✅
+- Automatic fall = 0 points ✅
+
+**Automated tests:** 0
+
+---
+
+# Learning & Quality
+
+- Used `IScoreManager`
+- Created `GuidelineScoreManager`
+- Separated scoring from the game loop
+- Replaced hard-coded scoring with named constants
+
+---
+
+# Feature Progress
+
+### Completed
+**1 / 8**
+
+### In Progress
+**Level System**
+
+### Remaining
+- Fall Speed
+- Combo
+- Back-to-Back
+- High Score / Leaderboard
+- Lines Cleared Statistics
+- Difficulty
+
+---
+
+# Next Week
+
+### Goal
+
+**Level System**
+
+- Increase level with lines cleared
+- Increase fall speed based on level
+
+---
+
+# Team Progress
+
+### Architecture
+✅ Completed
+
+### Refactoring
+✅ Completed
+
+### Start Menu
+✅ Completed
+
+### Score System
+✅ Completed
+
+### Level System
+🔄 Next Feature
+
+---
+
+# Thank You
+
+### Questions?
