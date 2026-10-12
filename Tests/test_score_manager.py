@@ -109,3 +109,21 @@ def test_reset_clears_the_combo(manager):
     manager.process_line_clear(1)
     manager.reset()
     assert manager.process_line_clear(1) == 100
+
+
+
+@pytest.mark.parametrize("difficulty, level, speed", [
+    ("easy", 1, 0.625),
+    ("hard", 1, 0.375),
+    ("easy", 10, 0.175),
+    ("hard", 10, 0.105),
+    ("hard", 20, 0.1),  # hits the speed cap
+])
+def test_fall_speed_by_difficulty(difficulty, level, speed):
+    manager = GuidelineScoreManager(FileHighScoreRepository(), difficulty=difficulty)
+    manager.total_lines = (level - 1) * 10
+    assert manager.get_fall_speed() == pytest.approx(speed)
+
+
+def test_difficulty_defaults_to_normal(manager):
+    assert manager.difficulty == "normal"
