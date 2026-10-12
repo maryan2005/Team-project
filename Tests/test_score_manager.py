@@ -17,6 +17,7 @@ def test_line_clear_points(manager, lines, points):
 
 def test_scores_add_up(manager):
     manager.process_line_clear(1)
+    manager.process_line_clear(0)  # a lock with no clear, so no combo
     manager.process_line_clear(4)
     assert manager.get_score() == 900
 
@@ -80,3 +81,31 @@ def test_reset_clears_stats(manager):
     manager.process_line_clear(2)
     manager.reset()
     assert manager.get_stats() == {1: 0, 2: 0, 3: 0, 4: 0}
+
+
+def test_first_clear_has_no_combo_bonus(manager):
+    assert manager.process_line_clear(1) == 100
+
+
+def test_second_clear_in_a_row_gets_bonus(manager):
+    manager.process_line_clear(1)
+    assert manager.process_line_clear(1) == 150
+
+
+def test_combo_bonus_keeps_growing(manager):
+    manager.process_line_clear(1)
+    manager.process_line_clear(1)
+    assert manager.process_line_clear(1) == 200
+
+
+def test_lock_without_clear_ends_the_combo(manager):
+    manager.process_line_clear(1)
+    manager.process_line_clear(0)
+    assert manager.process_line_clear(1) == 100
+
+
+def test_reset_clears_the_combo(manager):
+    manager.process_line_clear(1)
+    manager.process_line_clear(1)
+    manager.reset()
+    assert manager.process_line_clear(1) == 100
