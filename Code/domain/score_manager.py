@@ -12,9 +12,11 @@ class GuidelineScoreManager(IScoreManager):
     FALL_SPEED_STEP = 0.04  # seconds removed per level
     MIN_FALL_SPEED = 0.1  # fastest allowed
     COMBO_BONUS = 50  # per earlier clear in the streak
+    DIFFICULTY_SPEED = {"easy": 1.25, "normal": 1.0, "hard": 0.75}  # multiplies seconds per row
 
-    def __init__(self, high_score_repo: IHighScoreRepository) -> None:
+    def __init__(self, high_score_repo: IHighScoreRepository, difficulty: str = "normal") -> None:
         self.high_score_repo: IHighScoreRepository = high_score_repo
+        self.difficulty: str = difficulty
         self.score: int = 0
         self.total_lines: int = 0
         self.combo: int = 0  # clears in a row before the current piece
@@ -39,8 +41,9 @@ class GuidelineScoreManager(IScoreManager):
         self.score += distance * per_cell
 
     def get_fall_speed(self) -> float:
-        """Seconds per row, faster each level down to MIN_FALL_SPEED."""
+        """Seconds per row, faster each level and on harder difficulties, down to MIN_FALL_SPEED."""
         speed = self.START_FALL_SPEED - (self.get_level() - 1) * self.FALL_SPEED_STEP
+        speed *= self.DIFFICULTY_SPEED[self.difficulty]
         return max(speed, self.MIN_FALL_SPEED)
 
     def get_score(self) -> int:
