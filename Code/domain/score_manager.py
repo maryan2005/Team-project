@@ -7,6 +7,9 @@ class GuidelineScoreManager(IScoreManager):
     SOFT_DROP_POINTS = 1  # per 1 cell
     HARD_DROP_POINTS = 2  # per 1 cell
     LINES_PER_LEVEL = 10
+    START_FALL_SPEED = 0.5  # seconds per row at level 1
+    FALL_SPEED_STEP = 0.04  # seconds removed per level
+    MIN_FALL_SPEED = 0.1  # fastest allowed
 
     def __init__(self, high_score_repo: IHighScoreRepository) -> None:
         self.high_score_repo: IHighScoreRepository = high_score_repo
@@ -26,8 +29,9 @@ class GuidelineScoreManager(IScoreManager):
         self.score += distance * per_cell
 
     def get_fall_speed(self) -> float:
-        """Fixed fall speed step matching the original loop timing."""
-        return 0.5
+        """Seconds per row, faster each level down to MIN_FALL_SPEED."""
+        speed = self.START_FALL_SPEED - (self.get_level() - 1) * self.FALL_SPEED_STEP
+        return max(speed, self.MIN_FALL_SPEED)
 
     def get_score(self) -> int:
         return self.score
