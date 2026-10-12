@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from domain.interfaces import IScoreManager, IHighScoreRepository
 
 
@@ -56,6 +56,18 @@ class GuidelineScoreManager(IScoreManager):
     def get_stats(self) -> Dict[int, int]:
         """Returns how many singles, doubles, triples, and tetrises were cleared."""
         return dict(self.line_clear_counts)
+
+    def save_final_score(self) -> bool:
+        """Puts this game's score on the leaderboard. Returns True if it beat the old best."""
+        if self.score == 0:
+            return False
+        is_high_score = self.score > self.high_score_repo.load_high_score()
+        self.high_score_repo.add_score(self.score)
+        return is_high_score
+
+    def get_leaderboard(self) -> List[int]:
+        """Returns the best saved scores, highest first."""
+        return self.high_score_repo.load_scores()
 
     def get_level(self) -> int:
         """Returns the current game level."""
