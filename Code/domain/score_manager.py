@@ -11,20 +11,26 @@ class GuidelineScoreManager(IScoreManager):
     START_FALL_SPEED = 0.5  # seconds per row at level 1
     FALL_SPEED_STEP = 0.04  # seconds removed per level
     MIN_FALL_SPEED = 0.1  # fastest allowed
+    COMBO_BONUS = 50  # per earlier clear in the streak
 
     def __init__(self, high_score_repo: IHighScoreRepository) -> None:
         self.high_score_repo: IHighScoreRepository = high_score_repo
         self.score: int = 0
         self.total_lines: int = 0
+        self.combo: int = 0  # clears in a row before the current piece
         self.line_clear_counts: Dict[int, int] = {1: 0, 2: 0, 3: 0, 4: 0}
 
     def process_line_clear(self, lines_cleared: int, is_t_spin: bool = False) -> int:
-        """Calculates points from the LINE_CLEAR_POINTS table."""
+        """Calculates points from the clear table plus the combo bonus."""
         points = self.LINE_CLEAR_POINTS[lines_cleared]
+        if lines_cleared > 0:
+            points += self.COMBO_BONUS * self.combo  # first clear in a streak adds 0
+            self.combo += 1
+            self.line_clear_counts[lines_cleared] += 1
+        else:
+            self.combo = 0  # a piece locked without clearing, so the streak ends
         self.score += points
         self.total_lines += lines_cleared
-        if lines_cleared > 0:
-            self.line_clear_counts[lines_cleared] += 1
         return points
 
     def add_drop_score(self, distance: int, is_hard_drop: bool) -> None:
@@ -55,4 +61,5 @@ class GuidelineScoreManager(IScoreManager):
     def reset(self) -> None:
         self.score = 0
         self.total_lines = 0
+        self.combo = 0
         self.line_clear_counts = {1: 0, 2: 0, 3: 0, 4: 0}
