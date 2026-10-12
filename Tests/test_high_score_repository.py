@@ -1,40 +1,38 @@
-import json
-from pathlib import Path
-from typing import List
-from domain.interfaces import IHighScoreRepository
+import pytest
+from domain.high_score_repository import FileHighScoreRepository
 
 
-class FileHighScoreRepository(IHighScoreRepository):
-    """File-backed leaderboard implementing IHighScoreRepository."""
-    MAX_SCORES = 5
+@pytest.fixture
+def repo(tmp_path):
+    # Saves to a temporary folder, so the real score file is never touched
+    return FileHighScoreRepository(str(tmp_path / "scores.json"))
 
-    def __init__(self, file_path: str = "highscore.json") -> None:
-        self.file_path: str = file_path
 
-    def load_scores(self) -> List[int]:
-        """Returns saved scores from best to worst, or [] if the file is missing or corrupt."""
-        path = Path(self.file_path)
-        if not path.exists():
-            return []
-        try:
-            saved = json.loads(path.read_text(encoding="utf-8"))["scores"]
-            return sorted((int(score) for score in saved), reverse=True)[:self.MAX_SCORES]
-        except (OSError, ValueError, TypeError, KeyError):  # bad JSON is a ValueError
-            return []
+def test_missing_file_gives_no_scores(repo):
+    assert repo.load_scores() == []
+    assert repo.load_high_score() == 0
 
-    def add_score(self, score: int) -> None:
-        """Adds a score, keeps the best MAX_SCORES, and saves them."""
-        scores = sorted(self.load_scores() + [score], reverse=True)[:self.MAX_SCORES]
-        try:
-            Path(self.file_path).write_text(json.dumps({"scores": scores}), encoding="utf-8")
-        except OSError:
-            pass
 
-    def load_high_score(self) -> int:
-        """Returns the best saved score, or 0 if there are none."""
-        scores = self.load_scores()
-        return scores[0] if scores else 0
+def test_scores_are_saved_best_first(repo):
+    repo.add_score(300)
+    repo.add_score(900)
+    repo.add_score(100)
+    assert repo.load_scores() == [900, 300, 100]
 
-    def save_high_score(self, score: int) -> None:
-        """Kept for the interface: puts the score on the leaderboard."""
-        self.add_score(score)
+
+def test_only_the_top_five_are_kept(repo):
+    for score in [100, 200, 300, 400, 500, 600, 700]:
+        repo.add_score(score)
+    assert repo.load_scores() == [700, 600, 500, 400, 300]
+
+
+def test_corrupt_file_gives_no_scores(tmp_path):
+    bad_file = tmp_path / "scores.json"
+    bad_file.write_text("not json")
+    assert FileHighScoreRepository(str(bad_file)).load_scores() == []
+
+
+def test_high_score_is_the_best_saved(repo):
+    repo.add_score(300)
+    repo.add_score(900)
+    assert repo.load_high_score() == 900
