@@ -6,11 +6,11 @@ class GuidelineScoreManager(IScoreManager):
     LINE_CLEAR_POINTS = {0: 0, 1: 100, 2: 300, 3: 500, 4: 800}
     SOFT_DROP_POINTS = 1  # per 1 cell
     HARD_DROP_POINTS = 2  # per 1 cell
-    
+    LINES_PER_LEVEL = 10
+
     def __init__(self, high_score_repo: IHighScoreRepository) -> None:
         self.high_score_repo: IHighScoreRepository = high_score_repo
         self.score: int = 0
-        self.level: int = 1
         self.total_lines: int = 0
 
     def process_line_clear(self, lines_cleared: int, is_t_spin: bool = False) -> int:
@@ -38,9 +38,9 @@ class GuidelineScoreManager(IScoreManager):
 
     def get_level(self) -> int:
         """Returns the current game level."""
-        return self.level
+        return 1 + self.total_lines // self.LINES_PER_LEVEL
 
     def reset(self) -> None:
         self.score = 0
-        self.level = 1
         self.total_lines = 0
+        
