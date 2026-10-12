@@ -15,7 +15,8 @@ class SettingsManager:
             "move_left": 97,    # pygame.K_a
             "move_right": 100,  # pygame.K_d
             "soft_drop": 115,   # pygame.K_s
-            "rotate": 119,      # pygame.K_w
+            "rotate": 1073741906,  # pygame.K_UP
+            "rotate_ccw": 122,  # pygame.K_z
             "hard_drop": 32,    # pygame.K_SPACE
         }
         self._das_delay: float = 0.15
