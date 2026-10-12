@@ -57,3 +57,26 @@ def test_reset(manager):
     assert manager.get_score() == 0
     assert manager.get_lines() == 0
     assert manager.get_level() == 1
+
+
+def test_stats_count_each_clear_type(manager):
+    manager.process_line_clear(1)
+    manager.process_line_clear(1)
+    manager.process_line_clear(4)
+    assert manager.get_stats() == {1: 2, 2: 0, 3: 0, 4: 1}
+
+
+def test_stats_ignore_zero_line_clears(manager):
+    manager.process_line_clear(0)
+    assert manager.get_stats() == {1: 0, 2: 0, 3: 0, 4: 0}
+
+
+def test_stats_returns_a_copy(manager):
+    manager.get_stats()[1] = 99  # changing the copy must not change the real counts
+    assert manager.get_stats()[1] == 0
+
+
+def test_reset_clears_stats(manager):
+    manager.process_line_clear(2)
+    manager.reset()
+    assert manager.get_stats() == {1: 0, 2: 0, 3: 0, 4: 0}
