@@ -1,3 +1,4 @@
+from typing import Dict
 from domain.interfaces import IScoreManager, IHighScoreRepository
 
 
@@ -15,12 +16,15 @@ class GuidelineScoreManager(IScoreManager):
         self.high_score_repo: IHighScoreRepository = high_score_repo
         self.score: int = 0
         self.total_lines: int = 0
+        self.line_clear_counts: Dict[int, int] = {1: 0, 2: 0, 3: 0, 4: 0}
 
     def process_line_clear(self, lines_cleared: int, is_t_spin: bool = False) -> int:
         """Calculates points from the LINE_CLEAR_POINTS table."""
         points = self.LINE_CLEAR_POINTS[lines_cleared]
         self.score += points
         self.total_lines += lines_cleared
+        if lines_cleared > 0:
+            self.line_clear_counts[lines_cleared] += 1
         return points
 
     def add_drop_score(self, distance: int, is_hard_drop: bool) -> None:
@@ -40,6 +44,10 @@ class GuidelineScoreManager(IScoreManager):
         """Returns the total lines cleared."""
         return self.total_lines
 
+    def get_stats(self) -> Dict[int, int]:
+        """Returns how many singles, doubles, triples, and tetrises were cleared."""
+        return dict(self.line_clear_counts)
+
     def get_level(self) -> int:
         """Returns the current game level."""
         return 1 + self.total_lines // self.LINES_PER_LEVEL
@@ -47,4 +55,4 @@ class GuidelineScoreManager(IScoreManager):
     def reset(self) -> None:
         self.score = 0
         self.total_lines = 0
-        
+        self.line_clear_counts = {1: 0, 2: 0, 3: 0, 4: 0}
