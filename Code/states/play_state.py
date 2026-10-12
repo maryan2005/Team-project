@@ -37,8 +37,8 @@ class PlayState(GameState):
         self.challenge_manager: IChallengeManager = StandardChallengeManager()
         self.board_renderer: BoardRenderer = BoardRenderer(cell_size=20, grid_offset_x=100, grid_offset_y=60)
 
-        # Game loop timing counters matching original tetris_ver2 tick pacing
-        self.counter: int = 0
+        # Seconds since the piece last fell, and whether Down is held
+        self.fall_timer: float = 0.0
         self.pressing_down: bool = False
 
         self.font = pygame.font.SysFont("Calibri", 25, bold=True)
@@ -123,12 +123,12 @@ class PlayState(GameState):
 
     def update(self, delta_time: float) -> None:
         """Updates game tick loop and automatic fall movement."""
-        self.counter += 1
-        if self.counter > 100000:
-            self.counter = 0
-
-        # Automatic downward tick matching original pacing (fps // 2 logic)
-        if self.counter % 12 == 0 or self.pressing_down:
+        # Fall one row each time the level's fall speed has passed
+        self.fall_timer += delta_time
+        time_to_fall = self.fall_timer >= self.score_manager.get_fall_speed()
+        if time_to_fall:
+            self.fall_timer = 0.0
+        if time_to_fall or self.pressing_down:
             self.go_down()
 
         self.challenge_manager.update(
