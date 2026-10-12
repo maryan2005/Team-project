@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from typing import Dict
 
 class IScoreManager(ABC):
     """Contract for score tracking, combos, and gravity fall rates."""
@@ -22,6 +22,10 @@ class IScoreManager(ABC):
 
     @abstractmethod
     def get_lines(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_stats(self) -> Dict[int, int]:
         pass
 
     @abstractmethod
