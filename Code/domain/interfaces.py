@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, List
+
 
 class IScoreManager(ABC):
     """Contract for score tracking, combos, and gravity fall rates."""
@@ -29,6 +30,14 @@ class IScoreManager(ABC):
         pass
 
     @abstractmethod
+    def save_final_score(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_leaderboard(self) -> List[int]:
+        pass
+
+    @abstractmethod
     def get_level(self) -> int:
         pass
 
@@ -55,6 +64,14 @@ class IChallengeManager(ABC):
 
 class IHighScoreRepository(ABC):
     """Contract for loading and persisting high scores."""
+
+    @abstractmethod
+    def load_scores(self) -> List[int]:
+        pass
+
+    @abstractmethod
+    def add_score(self, score: int) -> None:
+        pass
 
     @abstractmethod
     def load_high_score(self) -> int:
