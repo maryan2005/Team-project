@@ -1,6 +1,26 @@
 import pytest
 from domain.high_score_repository import FileHighScoreRepository
+from domain.interfaces import IHighScoreRepository
 from domain.score_manager import GuidelineScoreManager
+
+
+class FakeRepository(IHighScoreRepository):
+    """Keeps scores in memory so the leaderboard tests never touch a file."""
+
+    def __init__(self):
+        self.scores = []
+
+    def load_scores(self):
+        return sorted(self.scores, reverse=True)
+
+    def add_score(self, score):
+        self.scores.append(score)
+
+    def load_high_score(self):
+        return max(self.scores, default=0)
+
+    def save_high_score(self, score):
+        self.add_score(score)
 
 
 @pytest.fixture
@@ -111,7 +131,6 @@ def test_reset_clears_the_combo(manager):
     assert manager.process_line_clear(1) == 100
 
 
-
 @pytest.mark.parametrize("difficulty, level, speed", [
     ("easy", 1, 0.625),
     ("hard", 1, 0.375),
@@ -127,3 +146,45 @@ def test_fall_speed_by_difficulty(difficulty, level, speed):
 
 def test_difficulty_defaults_to_normal(manager):
     assert manager.difficulty == "normal"
+
+
+@pytest.fixture
+def board_manager():
+    # A score manager whose leaderboard lives in memory
+    return GuidelineScoreManager(FakeRepository())
+
+
+def test_zero_score_is_not_saved(board_manager):
+    assert board_manager.save_final_score() is False
+    assert board_manager.get_leaderboard() == []
+
+
+def test_first_score_is_a_high_score(board_manager):
+    board_manager.add_drop_score(10, is_hard_drop=True)
+    assert board_manager.save_final_score() is True
+    assert board_manager.get_leaderboard() == [20]
+
+
+def test_beating_the_best_is_a_high_score(board_manager):
+    board_manager.add_drop_score(10, is_hard_drop=True)
+    board_manager.save_final_score()
+    board_manager.reset()
+    board_manager.add_drop_score(20, is_hard_drop=True)
+    assert board_manager.save_final_score() is True
+
+
+def test_lower_score_is_saved_but_not_a_high_score(board_manager):
+    board_manager.add_drop_score(20, is_hard_drop=True)
+    board_manager.save_final_score()
+    board_manager.reset()
+    board_manager.add_drop_score(10, is_hard_drop=True)
+    assert board_manager.save_final_score() is False
+    assert board_manager.get_leaderboard() == [40, 20]
+
+
+def test_tying_the_best_is_not_a_high_score(board_manager):
+    board_manager.add_drop_score(10, is_hard_drop=True)
+    board_manager.save_final_score()
+    board_manager.reset()
+    board_manager.add_drop_score(10, is_hard_drop=True)
+    assert board_manager.save_final_score() is False
