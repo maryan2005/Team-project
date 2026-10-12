@@ -159,6 +159,11 @@ class PlayState(GameState):
         self.engine.change_state(PauseState(self.engine, self))
 
     def game_over(self) -> None:
-        """Transitions to GameOverState."""
+        """Saves the final score, then transitions to GameOverState."""
         from states.game_over_state import GameOverState
-        self.engine.change_state(GameOverState(self.engine))
+        game_over_state = GameOverState(self.engine)
+        game_over_state.is_high_score = self.score_manager.save_final_score()
+        game_over_state.final_score = self.score_manager.get_score()
+        game_over_state.lines_cleared = self.score_manager.get_lines()
+        self.engine.change_state(game_over_state)
+        
