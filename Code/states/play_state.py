@@ -102,8 +102,11 @@ class PlayState(GameState):
 
     def go_space(self) -> None:
         """Instantly drops active piece to bottom-most valid position."""
+        start_y = self.active_piece.y
         while self.board.is_valid_position(self.active_piece, offset_y=1):
             self.active_piece.move(0, 1)
+        # Score before freeze(), which replaces the active piece
+        self.score_manager.add_drop_score(self.active_piece.y - start_y, is_hard_drop=True)
         self.freeze()
 
     def freeze(self) -> None:
@@ -112,8 +115,8 @@ class PlayState(GameState):
         """
         self.board.lock_piece(self.active_piece)
         lines_cleared = self.board.clear_full_lines()
-        if lines_cleared > 0:
-            self.score_manager.process_line_clear(lines_cleared)
+        # Always report the lock, even with 0 lines, so a combo can reset
+        self.score_manager.process_line_clear(lines_cleared)
 
         self.spawn_next_piece()
 
@@ -129,7 +132,11 @@ class PlayState(GameState):
         if time_to_fall:
             self.fall_timer = 0.0
         if time_to_fall or self.pressing_down:
+            start_y = self.active_piece.y
             self.go_down()
+            # Only the player's soft drop scores, not gravity or landing
+            if self.pressing_down and self.active_piece.y > start_y:
+                self.score_manager.add_drop_score(1, is_hard_drop=False)
 
         self.challenge_manager.update(
             delta_time=delta_time,
