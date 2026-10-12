@@ -152,6 +152,8 @@ class PlayState(GameState):
         # Render score banner at top-left corner
         score_text = self.font.render(f"Score: {self.score_manager.get_score()}", True, (0, 0, 0))
         surface.blit(score_text, (0, 0))
+        level_text = self.font.render(f"Level: {self.score_manager.get_level()}", True, (0, 0, 0))
+        surface.blit(level_text, (0, 30))
 
     def pause_game(self) -> None:
         """Transitions to PauseState while passing self as suspended state."""
@@ -165,5 +167,6 @@ class PlayState(GameState):
         game_over_state.is_high_score = self.score_manager.save_final_score()
         game_over_state.final_score = self.score_manager.get_score()
         game_over_state.lines_cleared = self.score_manager.get_lines()
+        game_over_state.leaderboard = self.score_manager.get_leaderboard()
         self.engine.change_state(game_over_state)
         
