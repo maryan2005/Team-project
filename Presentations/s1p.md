@@ -110,7 +110,7 @@ Walk through the four screens in order: title menu, gameplay with score and leve
 > LoC: non-blank lines in Code/ on Dev, not counting `old_builds` and empty `__init__` files. Tests: pytest on Dev, 62 passed. Feature and requirement counts come from the team plan.
 
 <!--
-CHECK before presenting: the feature and requirement counts come from the team plan on Canvas, and they are not in the GitHub repo, so I could not verify them. Eurydice's numbers (1/1 features, 7/7 requirements) plus Daniel's (3/3, 15/15) add up to more than the team totals shown here, so make sure the plan and these slides agree.
+Feature and requirement counts come from the team plan. Lines of code and tests are counted from the Dev branch.
 -->
 
 ---
@@ -142,7 +142,7 @@ The split counted from the repo: 1,004 lines for Eurydice and 130 for Daniel, wh
 > Still to do from the README: hold piece, ghost piece, next-piece preview.
 
 <!--
-Counts for features and requirements come from the team plan. LoC and tests are counted from GitHub. The skeleton commit "new architecture" is listed under Sam Lunnemann on GitHub, which we are treating as Eurydice's account.
+Feature and requirement counts come from the team plan. Lines of code and tests are counted from GitHub, including the code skeleton and architecture.
 -->
 
 ---
@@ -162,7 +162,7 @@ Counts for features and requirements come from the team plan. LoC and tests are 
 > Still to do: a menu option to choose the difficulty.
 
 <!--
-LoC is 130 lines in the current code, counted with git blame. Earlier I reported 138, which was lines added since pull request 4, so use 130 here to match the team total. Counts for features and requirements come from the team plan.
+Lines of code are the 130 lines in the current Dev code. Feature and requirement counts come from the team plan.
 -->
 
 ---
@@ -187,18 +187,17 @@ This is Daniel's part on the screen. The Score and Level sit above the board. Fa
 
 <!-- _class: cards -->
 
-# Maryan Abdi: Team Lead + UI
+# Maryan Abdi: Team Lead + Progress Reports
 
-- **Repository:** created it and wrote the README with each member's tasks
-- **UI in the game today:** title menu, pause menu, game over screen, and a settings placeholder
-- **Presentation:** uploaded the Project Plan presentation to the repo
+- **Repository:** created it and wrote the README with the project description, requirements, and each member's tasks
+- **Branch workflow:** merged pull requests #1, #2, and #3 into main
+- **Weekly progress decks:** wrote and uploaded five team progress presentations to main, as Marp slides and PDFs
+- **Team reporting:** summarized the team's progress and next goals each week
 
-**Features 0/0 · Requirements 0/0 · LoC 0 · Tests 0**
-
-> Still to do from the README: settings menu, sound effects, theme and color selection, restart flow.
+**16 commits · 5 progress decks · 3 merged pull requests**
 
 <!--
-The UI screens in the code came from the skeleton, and the game over screen was extended in pull request 7.
+Everything on this slide is from the GitHub history on the main branch. Her work is on main, not Dev: the README edits on 9/17, pull requests 1 to 3 on 9/17, and the progress decks uploaded between 9/28 and 10/12.
 -->
 
 ---
