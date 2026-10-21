@@ -273,4 +273,4 @@ GuidelineScoreManager "1" o-- "1" IHighScoreRepository : repo
 ' Explicit Ownership of Suspended State
 PauseState "1" *-- "1" PlayState : suspended_play_state
 
-@endl
+@enduml
