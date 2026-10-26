@@ -79,3 +79,12 @@ def test_rotation_bindings_can_be_reconfigured():
 
     assert handler.process_event(key_event(pygame.KEYDOWN, pygame.K_x)) == "rotate"
     assert handler.process_event(key_event(pygame.KEYDOWN, pygame.K_c)) == "rotate_ccw"
+
+
+def test_hold_binding_defaults_to_c_and_can_be_reconfigured():
+    handler = make_handler()
+
+    assert handler.process_event(key_event(pygame.KEYDOWN, pygame.K_c)) == "hold_piece"
+
+    handler.settings_manager.set_binding("hold", pygame.K_LSHIFT)
+    assert handler.process_event(key_event(pygame.KEYDOWN, pygame.K_LSHIFT)) == "hold_piece"

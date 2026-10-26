@@ -37,6 +37,8 @@ class InputHandler(IInputHandler):
                 return "move_right"
             elif event.key == pygame.K_SPACE:
                 return "hard_drop"
+            elif event.key == self.settings_manager.get_binding("hold", pygame.K_c):
+                return "hold_piece"
             elif event.key == pygame.K_DOWN:
                 return "soft_drop"
 

@@ -18,6 +18,7 @@ class SettingsManager:
             "rotate": 1073741906,  # pygame.K_UP
             "rotate_ccw": 122,  # pygame.K_z
             "hard_drop": 32,    # pygame.K_SPACE
+            "hold": 99,         # pygame.K_c
         }
         self._das_delay: float = 0.15
         self._arr_rate: float = 0.05

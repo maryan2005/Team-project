@@ -93,6 +93,7 @@ class PlayState(GameState):
         self.next_piece = Piece(shape_type=self._get_random_shape_type(), x=3, y=0)
         self.lock_timer = 0.0
         self.lock_delay_resets = 0
+        self.can_hold = True
 
         if not self.board.is_valid_position(self.active_piece):
             self.game_over()
@@ -123,6 +124,9 @@ class PlayState(GameState):
 
         elif action == "hard_drop":
             self.go_space()
+
+        elif action == "hold_piece":
+            self.hold_piece_action()
 
         elif action == "soft_drop":
             if not self.pressing_down:
@@ -212,8 +216,29 @@ class PlayState(GameState):
         self.spawn_next_piece()
 
     def hold_piece_action(self) -> None:
-        """Stub method satisfying PlayState interface."""
-        pass
+        """Stores the active piece or swaps it with the held piece once per turn."""
+        if not self.can_hold:
+            return
+
+        outgoing_piece = self.active_piece
+        outgoing_piece.reset_position()
+        if self.held_piece is None:
+            self.held_piece = outgoing_piece
+            self.active_piece = self.next_piece
+            self.next_piece = Piece(shape_type=self._get_random_shape_type(), x=3, y=0)
+        else:
+            self.active_piece = self.held_piece
+            self.held_piece = outgoing_piece
+
+        self.active_piece.reset_position()
+        self.can_hold = False
+        self.fall_timer = 0.0
+        self.soft_drop_timer = 0.0
+        self.lock_timer = 0.0
+        self.lock_delay_resets = 0
+
+        if not self.board.is_valid_position(self.active_piece):
+            self.game_over()
 
     def update(self, delta_time: float) -> None:
         """Updates game tick loop and automatic fall movement."""
@@ -263,7 +288,12 @@ class PlayState(GameState):
     def draw(self, surface: pygame.Surface) -> None:
         """Renders grid field, active piece, and current score banner."""
         self.board_renderer.render_board(surface, self.board)
+        ghost_x, ghost_y = self.active_piece.get_ghost_position(self.board)
+        ghost_piece = Piece(self.active_piece.shape_type, x=ghost_x, y=ghost_y)
+        ghost_piece.shape = [row[:] for row in self.active_piece.shape]
+        self.board_renderer.render_piece(surface, ghost_piece, is_ghost=True)
         self.board_renderer.render_piece(surface, self.active_piece)
+        self.board_renderer.render_hold_and_next(surface, self.held_piece, self.next_piece)
 
         # Render score banner at top-left corner
         score_text = self.font.render(f"Score: {self.score_manager.get_score()}", True, (0, 0, 0))
