@@ -110,7 +110,13 @@ class PlayState {
     - score_manager : IScoreManager
     - challenge_manager : IChallengeManager
     - board_renderer : BoardRenderer
+    - soft_drop_timer : float
+    - lock_timer : float
+    - lock_delay_resets : int
+    + LOCK_DELAY_SECONDS : float = 0.5
+    + MAX_LOCK_DELAY_RESETS : int = 15
     + handle_input(event: pygame.event.Event) : void
+    - _rotate_piece_with_kicks(clockwise: bool = true) : bool
     + update(delta_time: float) : void
     + draw(surface: pygame.Surface) : void
     + hold_piece_action() : void
@@ -267,4 +273,4 @@ GuidelineScoreManager "1" o-- "1" IHighScoreRepository : repo
 ' Explicit Ownership of Suspended State
 PauseState "1" *-- "1" PlayState : suspended_play_state
 
-@endl
+@enduml
