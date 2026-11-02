@@ -13,6 +13,7 @@ We are using ASE 420 software engineering concepts to improve the original Tetri
 * Move blocks left and right.
 * Move blocks down and drop them.
 * Rotate blocks.
+* Show a landing ghost, hold a piece with C, and preview the next piece.
 * Detect collisions.
 * Clear completed rows.
 * Track score and level.
@@ -198,4 +199,3 @@ Architecture Document: Add your architecture document link.
 Design Document: Add your design document link.
 Project Documentation: Add your documentation link.
 Canvas link: https://nku.instructure.com/courses/91834/modules/items/4231102
-
