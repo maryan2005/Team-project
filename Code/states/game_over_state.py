@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 import pygame
 from states.base_state import GameState
 
@@ -15,6 +15,8 @@ class GameOverState(GameState):
         self.lines_cleared: int = 0
         self.is_high_score: bool = False
         self.leaderboard: List[int] = []
+        self.leaderboard_entries: List[Dict[str, object]] = []
+        self.difficulty: str = "normal"
 
         self.title_font = pygame.font.SysFont("Calibri", 65, bold=True)
         self.font = pygame.font.SysFont("Calibri", 32, bold=True)
@@ -42,10 +44,17 @@ class GameOverState(GameState):
             self.draw_text(surface, "New High Score!", self.font, (255, 165, 0), center_x, 205)
 
         self.draw_text(surface, "Top 5", self.font, (0, 0, 0), center_x, 270)
-        for rank, score in enumerate(self.leaderboard, start=1):
-            self.draw_text(surface, f"{rank}. {score}", self.font, (80, 80, 80), center_x, 270 + rank * 40)
+        for rank, text in enumerate(self.leaderboard_lines(), start=1):
+            self.draw_text(surface, f"{rank}. {text}", self.font, (80, 80, 80), center_x, 270 + rank * 40)
 
         self.draw_text(surface, "R: restart    Q: title", self.font, (0, 0, 0), center_x, 540)
+
+    def leaderboard_lines(self) -> List[str]:
+        """One line per saved game: score, difficulty, and level when known."""
+        if self.leaderboard_entries:
+            return [f"{entry['score']}   {str(entry['difficulty']).capitalize()}   Level {entry['level']}"
+                    for entry in self.leaderboard_entries]
+        return [str(score) for score in self.leaderboard]
 
     def draw_text(self, surface: pygame.Surface, text: str, font: pygame.font.Font,
                   color: tuple, center_x: int, y: int) -> None:
@@ -56,7 +65,7 @@ class GameOverState(GameState):
     def restart_game(self) -> None:
         """Starts a new gameplay session."""
         from states.play_state import PlayState
-        self.engine.change_state(PlayState(self.engine))
+        self.engine.change_state(PlayState(self.engine, difficulty=self.difficulty))
 
     def return_to_title(self) -> None:
         """Returns to TitleState."""

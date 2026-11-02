@@ -11,6 +11,7 @@ from domain.high_score_repository import FileHighScoreRepository
 from input.interfaces import IInputHandler
 from input.input_handler import InputHandler
 from rendering.board_renderer import BoardRenderer
+from rendering.stats_panel import PanelData, StatsPanel
 
 if TYPE_CHECKING:
     from core.game_engine import GameEngine
@@ -55,8 +56,9 @@ class PlayState(GameState):
     LOCK_DELAY_SECONDS: float = 0.5
     MAX_LOCK_DELAY_RESETS: int = 15
 
-    def __init__(self, engine: "GameEngine") -> None:
+    def __init__(self, engine: "GameEngine", difficulty: str = "normal") -> None:
         super().__init__(engine)
+        self.difficulty: str = difficulty
         self.board: Board = Board(width=10, height=20)
         
         # Initialize active and next piece using letter keys matching piece.py
@@ -67,9 +69,11 @@ class PlayState(GameState):
 
         # Annotated strictly using abstract interface contracts per UML diagram
         self.input_handler: IInputHandler = InputHandler(self.engine.settings_manager)
-        self.score_manager: IScoreManager = GuidelineScoreManager(FileHighScoreRepository())
+        self.score_manager: IScoreManager = GuidelineScoreManager(FileHighScoreRepository(), difficulty=difficulty)
         self.challenge_manager: IChallengeManager = StandardChallengeManager()
         self.board_renderer: BoardRenderer = BoardRenderer(cell_size=20, grid_offset_x=100, grid_offset_y=60)
+        self.stats_panel: StatsPanel = StatsPanel()
+        self.saved_high_score: int = max(self.score_manager.get_leaderboard(), default=0)
 
         # Seconds since the piece last fell, and whether Down is held
         self.fall_timer: float = 0.0
@@ -295,11 +299,17 @@ class PlayState(GameState):
         self.board_renderer.render_piece(surface, self.active_piece)
         self.board_renderer.render_hold_and_next(surface, self.held_piece, self.next_piece)
 
-        # Render score banner at top-left corner
-        score_text = self.font.render(f"Score: {self.score_manager.get_score()}", True, (0, 0, 0))
-        surface.blit(score_text, (0, 0))
-        level_text = self.font.render(f"Level: {self.score_manager.get_level()}", True, (0, 0, 0))
-        surface.blit(level_text, (0, 30))
+        score = self.score_manager.get_score()
+        self.stats_panel.render(surface, PanelData(
+            score=score,
+            high_score=max(score, self.saved_high_score),
+            level=self.score_manager.get_level(),
+            lines=self.score_manager.get_lines(),
+            difficulty=self.difficulty,
+            line_clears=self.score_manager.get_stats(),
+            combo=self.score_manager.get_combo(),
+            back_to_back=self.score_manager.get_back_to_back(),
+        ))
 
     def pause_game(self) -> None:
         """Transitions to PauseState while passing self as suspended state."""
@@ -314,5 +324,7 @@ class PlayState(GameState):
         game_over_state.final_score = self.score_manager.get_score()
         game_over_state.lines_cleared = self.score_manager.get_lines()
         game_over_state.leaderboard = self.score_manager.get_leaderboard()
+        game_over_state.leaderboard_entries = self.score_manager.get_leaderboard_entries()
+        game_over_state.difficulty = self.difficulty
         self.engine.change_state(game_over_state)
         
