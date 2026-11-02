@@ -36,3 +36,21 @@ def test_high_score_is_the_best_saved(repo):
     repo.add_score(300)
     repo.add_score(900)
     assert repo.load_high_score() == 900
+
+
+def test_entries_keep_level_and_difficulty(repo):
+    repo.add_score(900, level=3, difficulty="hard")
+    repo.add_score(400, level=1, difficulty="easy")
+    assert repo.load_entries() == [
+        {"score": 900, "level": 3, "difficulty": "hard"},
+        {"score": 400, "level": 1, "difficulty": "easy"},
+    ]
+    assert repo.load_scores() == [900, 400]
+
+
+def test_older_files_with_plain_scores_still_load(tmp_path):
+    old_file = tmp_path / "scores.json"
+    old_file.write_text('{"scores": [500, 900]}')
+    entries = FileHighScoreRepository(str(old_file)).load_entries()
+    assert [entry["score"] for entry in entries] == [900, 500]
+    assert entries[0]["difficulty"] == "normal"
