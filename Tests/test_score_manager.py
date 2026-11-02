@@ -13,7 +13,10 @@ class FakeRepository(IHighScoreRepository):
     def load_scores(self):
         return sorted(self.scores, reverse=True)
 
-    def add_score(self, score):
+    def load_entries(self):
+        return [{"score": score, "level": 1, "difficulty": "normal"} for score in self.load_scores()]
+
+    def add_score(self, score, level=1, difficulty="normal"):
         self.scores.append(score)
 
     def load_high_score(self):
@@ -188,3 +191,46 @@ def test_tying_the_best_is_not_a_high_score(board_manager):
     board_manager.reset()
     board_manager.add_drop_score(10, is_hard_drop=True)
     assert board_manager.save_final_score() is False
+
+
+def test_first_tetris_has_no_back_to_back_bonus(manager):
+    assert manager.process_line_clear(4) == 800
+    assert manager.get_back_to_back() is True
+
+
+def test_second_tetris_in_a_row_gets_the_bonus(manager):
+    manager.process_line_clear(4)
+    assert manager.process_line_clear(4) == 800 + 50 + 200  # tetris, combo, back-to-back
+
+
+def test_a_smaller_clear_ends_back_to_back(manager):
+    manager.process_line_clear(4)
+    manager.process_line_clear(2)
+    assert manager.get_back_to_back() is False
+    assert manager.process_line_clear(4) == 800 + 100  # combo only, no back-to-back
+
+
+def test_a_lock_without_a_clear_keeps_back_to_back(manager):
+    manager.process_line_clear(4)
+    manager.process_line_clear(0)
+    assert manager.get_back_to_back() is True
+    assert manager.process_line_clear(4) == 800 + 200  # back-to-back, combo was reset
+
+
+def test_reset_clears_back_to_back(manager):
+    manager.process_line_clear(4)
+    manager.reset()
+    assert manager.get_back_to_back() is False
+
+
+def test_saved_game_remembers_level_and_difficulty():
+    class Recording(FakeRepository):
+        def add_score(self, score, level=1, difficulty="normal"):
+            self.saved = (score, level, difficulty)
+            super().add_score(score)
+
+    repo = Recording()
+    hard_manager = GuidelineScoreManager(repo, difficulty="hard")
+    hard_manager.add_drop_score(10, is_hard_drop=True)
+    hard_manager.save_final_score()
+    assert repo.saved == (20, 1, "hard")
