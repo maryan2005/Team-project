@@ -55,8 +55,8 @@ class TitleState(GameState):
         """Triggers the action associated with the currently highlighted menu option."""
         if self.selected_option == "Start Game":
             # Deferred import to prevent circular state dependencies
-            from states.play_state import PlayState
-            self.engine.change_state(PlayState(self.engine))
+            from states.difficulty_state import DifficultyState
+            self.engine.change_state(DifficultyState(self.engine))
 
         elif self.selected_option == "Settings":
             # Deferred import to prevent circular state dependencies
