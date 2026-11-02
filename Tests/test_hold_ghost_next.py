@@ -3,6 +3,7 @@ import pygame
 from domain.board import Board
 from domain.piece import Piece
 from rendering.board_renderer import BoardRenderer
+from rendering.stats_panel import StatsPanel
 from states.play_state import PlayState
 
 
@@ -99,11 +100,26 @@ def test_draw_renders_ghost_before_active_piece_and_hold_next_previews():
         def get_level(self):
             return 1
 
+        def get_lines(self):
+            return 0
+
+        def get_stats(self):
+            return {1: 0, 2: 0, 3: 0, 4: 0}
+
+        def get_combo(self):
+            return 0
+
+        def get_back_to_back(self):
+            return False
+
     state = make_play_state()
     renderer = RecordingRenderer()
     state.board_renderer = renderer
     state.font = pygame.font.SysFont("Calibri", 25, bold=True)
     state.score_manager = ScoreManager()
+    state.stats_panel = StatsPanel()
+    state.saved_high_score = 0
+    state.difficulty = "normal"
     surface = pygame.Surface((800, 600))
     active_x, active_y = state.active_piece.x, state.active_piece.y
 
