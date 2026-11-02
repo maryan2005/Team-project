@@ -30,11 +30,23 @@ class IScoreManager(ABC):
         pass
 
     @abstractmethod
+    def get_combo(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_back_to_back(self) -> bool:
+        pass
+
+    @abstractmethod
     def save_final_score(self) -> bool:
         pass
 
     @abstractmethod
     def get_leaderboard(self) -> List[int]:
+        pass
+
+    @abstractmethod
+    def get_leaderboard_entries(self) -> List[Dict[str, object]]:
         pass
 
     @abstractmethod
@@ -70,7 +82,11 @@ class IHighScoreRepository(ABC):
         pass
 
     @abstractmethod
-    def add_score(self, score: int) -> None:
+    def load_entries(self) -> List[Dict[str, object]]:
+        pass
+
+    @abstractmethod
+    def add_score(self, score: int, level: int = 1, difficulty: str = "normal") -> None:
         pass
 
     @abstractmethod
