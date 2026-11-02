@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from domain.interfaces import IHighScoreRepository
 
 
@@ -11,22 +11,29 @@ class FileHighScoreRepository(IHighScoreRepository):
     def __init__(self, file_path: str = "highscore.json") -> None:
         self.file_path: str = file_path
 
-    def load_scores(self) -> List[int]:
-        """Returns saved scores from best to worst, or [] if the file is missing or corrupt."""
+    def load_entries(self) -> List[Dict[str, object]]:
+        """Returns saved games from best to worst, or [] if the file is missing or corrupt."""
         path = Path(self.file_path)
         if not path.exists():
             return []
         try:
             saved = json.loads(path.read_text(encoding="utf-8"))["scores"]
-            return sorted((int(score) for score in saved), reverse=True)[:self.MAX_SCORES]
+            entries = [self._to_entry(item) for item in saved]
         except (OSError, ValueError, TypeError, KeyError):  # bad JSON is a ValueError
             return []
+        entries.sort(key=lambda entry: entry["score"], reverse=True)
+        return entries[:self.MAX_SCORES]
 
-    def add_score(self, score: int) -> None:
-        """Adds a score, keeps the best MAX_SCORES, and saves them."""
-        scores = sorted(self.load_scores() + [score], reverse=True)[:self.MAX_SCORES]
+    def load_scores(self) -> List[int]:
+        """Returns just the saved scores, best first."""
+        return [entry["score"] for entry in self.load_entries()]
+
+    def add_score(self, score: int, level: int = 1, difficulty: str = "normal") -> None:
+        """Adds a game, keeps the best MAX_SCORES, and saves them."""
+        entries = self.load_entries() + [{"score": score, "level": level, "difficulty": difficulty}]
+        entries.sort(key=lambda entry: entry["score"], reverse=True)
         try:
-            Path(self.file_path).write_text(json.dumps({"scores": scores}), encoding="utf-8")
+            Path(self.file_path).write_text(json.dumps({"scores": entries[:self.MAX_SCORES]}), encoding="utf-8")
         except OSError:
             pass
 
@@ -38,3 +45,11 @@ class FileHighScoreRepository(IHighScoreRepository):
     def save_high_score(self, score: int) -> None:
         """Kept for the interface: puts the score on the leaderboard."""
         self.add_score(score)
+
+    @staticmethod
+    def _to_entry(item) -> Dict[str, object]:
+        """Accepts a plain score (older files) or a dict with score, level, and difficulty."""
+        if isinstance(item, dict):
+            return {"score": int(item["score"]), "level": int(item.get("level", 1)),
+                    "difficulty": str(item.get("difficulty", "normal"))}
+        return {"score": int(item), "level": 1, "difficulty": "normal"}
