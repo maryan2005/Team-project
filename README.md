@@ -1,5 +1,24 @@
 # Team-project - Team Yellow
 
+## Set up and test
+
+Run the setup script for your platform from the repository root. If Python 3 is missing, Windows installs Python 3.12 with `winget`; Linux uses the available system package manager and may prompt for administrator access. Each script creates a `.venv` virtual environment, installs the dependencies, and runs the test suite.
+
+Windows PowerShell:
+
+```powershell
+.\setup_windows.ps1
+```
+
+Linux:
+
+```bash
+chmod +x setup_linux.sh
+./setup_linux.sh
+```
+
+After setup, start the game with `.venv\Scripts\python.exe Code\main.py` on Windows or `.venv/bin/python Code/main.py` on Linux.
+
 ## Project Description
 
 Our team is developing a Tetris game using **Python and Pygame**. Players can move, rotate, and drop Tetris blocks while trying to clear rows.
