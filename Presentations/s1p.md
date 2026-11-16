@@ -103,11 +103,11 @@ Walk through the four screens in order: title menu, gameplay with score and leve
 |---|---|
 | Features | **3 / 3** |
 | Requirements | **15 / 15** |
-| Implementation LoC | **1,134** |
-| Tests | **62 passing** |
+| Implementation LoC | **1,390** |
+| Tests | **90 passing** |
 
 
-> LoC: non-blank lines in Code/ on Dev, not counting `old_builds` and empty `__init__` files. Tests: pytest on Dev, 62 passed. Feature and requirement counts come from the team plan.
+> LoC: non-blank lines in Code/ on Dev, not counting `old_builds` and empty `__init__` files. Tests: pytest on Dev, 90 passed. Feature and requirement counts come from the team plan.
 
 <!--
 Feature and requirement counts come from the team plan. Lines of code and tests are counted from the Dev branch.
@@ -122,7 +122,7 @@ Feature and requirement counts come from the team plan. Lines of code and tests 
 ![w:1090](images/chart_contributions.png)
 
 <!--
-The split counted from the repo: 1,004 lines for Eurydice and 130 for Daniel, which adds up to 1,134. Tests: 22 and 40, which adds up to 62.
+The chart shows the split from the Sprint 1 count. Dev now has 1,390 lines and 90 tests.
 -->
 
 ---
@@ -139,7 +139,7 @@ The split counted from the repo: 1,004 lines for Eurydice and 130 for Daniel, wh
 
 **Features 1/1 · Requirements 7/7 · LoC 1,004 · Tests 22**
 
-> Still to do from the README: hold piece, ghost piece, next-piece preview.
+> Added since: hold piece, ghost piece, and next-piece preview.
 
 <!--
 Feature and requirement counts come from the team plan. Lines of code and tests are counted from GitHub, including the code skeleton and architecture.
@@ -151,15 +151,15 @@ Feature and requirement counts come from the team plan. Lines of code and tests 
 
 # Daniel Than: Challenge + Scoring
 
-- **Seven features:** score, level, fall speed, combo, lines cleared stats, difficulty presets, and a top 5 leaderboard
+- **Eight features:** score, level, fall speed, combo, back-to-back bonus, lines cleared stats, difficulty presets, and a top 5 leaderboard
 - **In the game:** drop scoring, a Level display, and a game over screen with the score and top 5
 - **40 tests** for the score manager and the high score repository
 - **4 pull requests** (#4 to #7) plus direct commits to Dev
-- **Dropped:** the back-to-back bonus, because the game has no T-spin detection
+- **Difficulty menu:** pick easy, normal, or hard before the game starts
 
 **Features 3/3 · Requirements 15/15 · LoC 130 · Tests 40**
 
-> Still to do: a menu option to choose the difficulty.
+> Added since: the difficulty menu and the back-to-back bonus.
 
 <!--
 Lines of code are the 130 lines in the current Dev code. Feature and requirement counts come from the team plan.
@@ -211,7 +211,7 @@ Everything on this slide is from the GitHub history on the main branch. Her work
 | Restructuring of base game | **Done**: one file with globals became classes |
 | Rough implementation of new features | **Mostly done**: most features are in |
 
-> Open on Dev: hold piece, ghost piece, next-piece preview, settings menu, sound, theme selection, and choosing the difficulty from a menu.
+> Open on Dev: settings menu, sound, and theme selection.
 
 <!--
 Most features are in, not all. The open items are the ones from the README that are still stubs or missing in the Dev code.
@@ -240,7 +240,7 @@ Each of these answers one of the code smells that the original tetris_ver2.py fi
 **Successes**
 - The code skeleton at the start gave everyone something to build on
 - Learning to use AI greatly increased our productivity
-- 62 passing tests and small pull requests
+- 90 passing tests and small pull requests
 
 **Challenges**
 - Keeping up consistent communication
@@ -257,8 +257,7 @@ The first two successes and the first two challenges are from the original slide
 
 # Schedule (Sprint 2)
 
-- **Finish the required features:** hold piece, ghost piece, next-piece preview, settings menu, sound, and theme selection
-- **Wire up difficulty** in the menu, and decide about T-spins and the back-to-back bonus
+- **Finish the required features:** settings menu, sound, and theme selection
 - **Refine and refactor:** replace the placeholder docs, user manual, and weekly reports
 - **Merge Dev into main**, which still holds the original scaffold
 - **Prepare the final presentation**
@@ -295,5 +294,5 @@ Open the video from Google Drive before the presentation starts, so it is ready 
 `github.com/maryan2005/Team-project`
 
 <!--
-Be ready for: why the state pattern, how the leaderboard is saved, and why back-to-back was dropped.
+Be ready for: why the state pattern, how the leaderboard is saved, and how the back-to-back bonus works.
 -->
